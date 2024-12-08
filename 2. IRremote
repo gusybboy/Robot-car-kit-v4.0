@@ -1,0 +1,177 @@
+int left = 7;  
+
+int right = 8;  
+
+int speeda = 5;  
+
+int speedb = 6;  
+
+int stb = 3; 
+
+ 
+ 
+
+int speed = 0; 
+
+ 
+ 
+
+ #include <IRremote.h>   
+
+ 
+ 
+
+const int IR_RECEIVE_PIN = 9; // Define the pin connected to the IR receiver  
+
+  
+
+void setup() {   
+
+    Serial.begin(9600);   
+
+    IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK); // Initialize the receiver   
+
+    Serial.println("IR Receiver Initialized. Waiting for input...");   
+
+ 
+ 
+
+    pinMode(left, OUTPUT);  
+
+    pinMode(right, OUTPUT);  
+
+    pinMode(stb, OUTPUT);  
+
+}   
+
+ 
+ 
+
+void loop() {   
+
+    // Check if a signal is received  
+
+    if (IrReceiver.decode()) {   
+
+        unsigned long receivedData = IrReceiver.decodedIRData.decodedRawData;  
+
+        Serial.print("Received HEX Value: 0x");   
+
+        Serial.println(receivedData, HEX); // Print the HEX value of the received signal    
+
+ 
+ 
+
+  if(receivedData == 0xE619FF00){ 
+
+    Forward(50); 
+
+} 
+
+  if(receivedData == 0xE31CFF00){ 
+
+    Reverse(50);  
+
+} 
+
+  if(receivedData == 0xA15EFF00){ 
+
+    Right(50);  
+
+  } 
+
+  if(receivedData == 0xF30CFF00){ 
+
+    Left(50);  
+
+} 
+
+  if(receivedData == 0xE718FF00){ 
+
+    Stop(0); 
+
+  } 
+
+ 
+
+  IrReceiver.resume(); // Prepare to receive the next signal  
+
+} 
+
+} 
+
+void Forward(int x){   
+
+    digitalWrite(left, 1);  
+
+    digitalWrite(right, 1);  
+
+    analogWrite(speeda, x);  
+
+    analogWrite(speedb, x);  
+
+    digitalWrite(stb, 1);  
+
+}   
+
+void Reverse(int x){  
+
+    digitalWrite(left, 0);  
+
+    digitalWrite(right, 0);  
+
+    analogWrite(speeda, x);  
+
+    analogWrite(speedb, x);  
+
+    digitalWrite(stb, 1);  
+
+}  
+
+ 
+ 
+
+void Right(int x){   
+
+    digitalWrite(left, );  
+
+    digitalWrite(right, 1);  
+
+    analogWrite(speeda, 0);  
+
+    analogWrite(speedb, x);  
+
+    digitalWrite(stb, 1);  
+
+}  
+
+ 
+ 
+
+void Left(int x){   
+
+    digitalWrite(left, 1);  
+
+    digitalWrite(right, 0);  
+
+    analogWrite(speeda, x);  
+
+    analogWrite(speedb, 0);  
+
+    digitalWrite(stb, 1);  
+
+}  
+
+void Stop(int x){ 
+
+    digitalWrite(left, 1);  
+
+    digitalWrite(right, 1);  
+
+    analogWrite(speeda, x);  
+
+    analogWrite(speedb, x);  
+
+    digitalWrite(stb, 1); 
+
+} 
