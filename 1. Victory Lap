@@ -1,0 +1,114 @@
+// Victory Lap Program
+/* 
+This program controls a robot to perform a victory lap, consisting of forward movements, left turns, and right turns.
+*/
+const int STBY = 3; // Standby pin to enable/disable motors
+const int PWMA = 5; // PWM pin for controlling motor A speed
+const int AIN1 = 7; // Direction pin for motor A
+const int PWMB = 6; // PWM pin for controlling motor B speed
+const int BIN1 = 8; // Direction pin for motor B
+
+void setup() {
+  pinMode(STBY, OUTPUT);
+  pinMode(PWMA, OUTPUT);
+  pinMode(PWMB, OUTPUT);
+  pinMode(AIN1, OUTPUT);
+  pinMode(BIN1, OUTPUT);
+}
+
+void loop() {
+  // Perform a series of movements
+  forward(100);
+  delay(7500);
+  leftForward(100);
+  delay(3000);
+  forward(100);
+  delay(3000);
+  leftForward(100);
+  delay(2900);
+  forward(100);
+  delay(7500);
+  leftForward(100);
+  delay(3900);
+  forward(100);
+  delay(2000);
+  leftForward(100);
+  delay(3000);
+}
+
+// Stop the robot
+void stop() {
+  digitalWrite(STBY, LOW); // Disable motors
+}
+
+// Move the robot forward
+void forward(int speed) {
+  digitalWrite(STBY, HIGH); // Enable motors
+  digitalWrite(BIN1, HIGH); // Set motor B forward
+  analogWrite(PWMB, speed);
+  digitalWrite(AIN1, HIGH); // Set motor A forward
+  analogWrite(PWMA, speed);
+}
+
+// Move the robot backward
+void backward(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, LOW); // Set motor B backward
+  analogWrite(PWMB, speed);
+  digitalWrite(AIN1, LOW); // Set motor A backward
+  analogWrite(PWMA, speed);
+}
+
+// Turn the robot left
+void left(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, LOW); // Set motor B backward
+  analogWrite(PWMB, speed);
+  digitalWrite(AIN1, HIGH); // Set motor A forward
+  analogWrite(PWMA, speed);
+}
+
+// Turn the robot right
+void right(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, HIGH); // Set motor B forward
+  analogWrite(PWMB, speed);
+  digitalWrite(AIN1, LOW); // Set motor A backward
+  analogWrite(PWMA, speed);
+}
+
+// Turn the robot left while moving forward
+void leftForward(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, HIGH); // Set motor B forward
+  analogWrite(PWMB, speed / 2); // Half speed for motor B
+  digitalWrite(AIN1, HIGH); // Set motor A forward
+  analogWrite(PWMA, speed); // Full speed for motor A
+}
+
+// Turn the robot right while moving forward
+void rightForward(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, HIGH); // Set motor B forward
+  analogWrite(PWMB, speed); // Full speed for motor B
+  digitalWrite(AIN1, HIGH); // Set motor A forward
+  analogWrite(PWMA, speed / 2); // Half speed for motor A
+}
+
+// Turn the robot left while moving backward
+void leftBackward(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, LOW); // Set motor B backward
+  analogWrite(PWMB, speed / 2); // Half speed for motor B
+  digitalWrite(AIN1, LOW); // Set motor A backward
+  analogWrite(PWMA, speed); // Full speed for motor A
+}
+
+// Turn the robot right while moving backward
+void rightBackward(int speed) {
+  digitalWrite(STBY, HIGH);
+  digitalWrite(BIN1, LOW); // Set motor B backward
+  analogWrite(PWMB, speed); // Full speed for motor B
+  digitalWrite(AIN1, LOW); // Set motor A backward
+  analogWrite(PWMA, speed / 2); // Half speed for motor A
+}
