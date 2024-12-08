@@ -1,0 +1,180 @@
+int Left1 = 7;   
+
+int Right1 = 8;   
+
+int speeda = 5;   
+
+int speedb = 6;   
+
+int stb = 3;  
+
+ 
+ 
+
+void setup() { 
+
+  // put your setup code here, to run once: 
+
+Serial.begin(9600); 
+
+  pinMode(Left1, OUTPUT);   
+
+  pinMode(Right1, OUTPUT);   
+
+  pinMode(stb, OUTPUT);   
+
+} 
+
+ 
+ 
+
+void loop() { 
+
+  // put your main code here, to run repeatedly: 
+
+int right = analogRead(A0); 
+
+int middle = analogRead(A1); 
+
+int left = analogRead(A2); 
+
+ 
+ 
+
+if(right == 1018 && middle == 1018 && left == 1018){ 
+
+  Stop(0); 
+
+} 
+
+if(middle >= 750 && middle <= 790){ 
+
+  Forward(50); 
+
+} 
+
+if(right >= 750 && right <= 800){ 
+
+  Right(50); 
+
+} 
+
+if(left >= 690 && left <= 750){ 
+
+  Left(50); 
+
+} 
+
+if(middle < 500 && right < 500 && left < 500){ 
+
+  Uturn(100); 
+
+} 
+
+ 
+ 
+
+Serial.print("right = ");  
+
+Serial.print(right);  
+
+Serial.print("\t");  
+
+Serial.print("middle = ");  
+
+Serial.print(middle);  
+
+Serial.print("\t");  
+
+Serial.print("left = ");  
+
+Serial.println(left);   
+
+} 
+
+ 
+ 
+
+void Stop(int x){ 
+
+  digitalWrite(Left1, 1);   
+
+  digitalWrite(Right1, 1);   
+
+  analogWrite(speeda, x);   
+
+  analogWrite(speedb, x);   
+
+  digitalWrite(stb, 1);  
+
+} 
+
+ 
+ 
+
+void Uturn(int x){ 
+
+digitalWrite(Left1, 1); 
+
+analogWrite(speeda, x); 
+
+digitalWrite(Right1, 0); 
+
+analogWrite(speedb, x / 2); 
+
+digitalWrite(stb, 1); 
+
+} 
+
+ 
+ 
+
+void Forward(int x){    
+
+  digitalWrite(Left1, 1);   
+
+  digitalWrite(Right1, 1);   
+
+  analogWrite(speeda, x);   
+
+  analogWrite(speedb, x);   
+
+  digitalWrite(stb, 1);   
+
+} 
+
+ 
+ 
+
+void Right(int x){    
+
+  digitalWrite(Left1, 1);   
+
+  digitalWrite(Right1, 1);   
+
+  analogWrite(speeda, 0);   
+
+  analogWrite(speedb, x);   
+
+  digitalWrite(stb, 1);   
+
+}   
+
+ 
+ 
+
+void Left(int x){    
+
+  digitalWrite(Left1, 1);   
+
+  digitalWrite(Right1, 1);   
+
+  analogWrite(speeda, x);   
+
+  analogWrite(speedb, 0);   
+
+  digitalWrite(stb, 1);   
+
+}   
+
+ 
