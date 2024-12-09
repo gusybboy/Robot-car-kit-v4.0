@@ -1,335 +1,148 @@
-#include <Servo.h> // Include Servo library for servo control  
-
-  
-
-  
-
-// Pin Definitions  
-
-const int trigPIN = 13;      // Ultrasonic sensor trigger pin  
-
-const int echoPIN = 12;      // Ultrasonic sensor echo pin  
-
-const int AIN = 7;           // Motor A direction pin  
-
-const int LEFT_BIN = 8;      // Motor B direction pin  
-
-const int PWMA = 5;          // Motor A PWM pin  
-
-const int PWMB = 6;          // Motor B PWM pin  
-
-const int STBY = 3;          // Standby pin for motor driver  
-
-Servo myservo;               // Servo object for scanning  
-
-  
-
-  
-
-// Global Variables  
-
-float distance = 0;          // Distance from ultrasonic sensor  
-
-const int threshold = 35;    // Obstacle distance threshold in cm  
-
-int pos = 90;                // Initial servo position (center)  
-
-  
-
-  
-
-// Function Prototypes  
-
-void sensor();  
-
-void forward(int speed);  
-
-void stopped();  
-
-void backward(int speed);  
-
-void turnLeft(int speed);  
-
-void turnRight(int speed);  
-
-  
-
-  
-
-void setup() {  
-
-    Serial.begin(9600);         // Initialize serial communication  
-
-    pinMode(trigPIN, OUTPUT);   // Set ultrasonic trigger pin as output  
-
-    pinMode(echoPIN, INPUT);    // Set ultrasonic echo pin as input  
-
-    pinMode(AIN, OUTPUT);       // Motor control pins  
-
-    pinMode(LEFT_BIN, OUTPUT);  
-
-    pinMode(STBY, OUTPUT);  
-
-    myservo.attach(10);         // Attach servo to pin 10  
-
-    myservo.write(90);          // Center servo  
-
-    delay(500);                 // Wait for servo to stabilize  
-
-}  
-
-  
-
-  
-
-void loop() {  
-
-    sensor(); // Check distance using ultrasonic sensor  
-
-delay(500);  
-
-    if (distance > threshold) {  
-
-        forward(60); // Move forward if no obstacle  
-
-    } else {  
-
-        stopped(); // Stop the car if obstacle detected  
-
-  
-
-  
-
-        // Check left  
-
-        myservo.write(0); // Turn servo to left  
-
-        delay(500);  
-
-        sensor();  
-
-  
-
-  
-
-        if (distance > threshold) {  
-
-            turnRight(120);    // Turn left if no obstacle on the left  
-
-            myservo.write(90); // Reset servo to center  
-
-            delay(500);  
-
-            forward(70);     // Move forward  
-
-        } else {  
-
-            // Check right  
-
-            myservo.write(180); // Turn servo to right  
-
-            delay(500);  
-
-            sensor();  
-
-  
-
-  
-
-            if (distance > threshold) {  
-
-                turnLeft(120);  // Turn right if no obstacle on the right  
-
-                myservo.write(90); // Reset servo to center  
-
-                delay(500);  
-
-                forward(60);   // Move forward  
-
-            } else {  
-
-                // Reverse and re-evaluate  
-
-                myservo.write(90); // Turn servo backward  
-
-                delay(500);  
-
-                sensor();  
-
-  
-
-  
-
-                backward(70);  // Move backward  
-
-                delay(1000);    // Reverse for 1 second  
-
-                turnRight(200);  
-
-                stopped();      // Stop to re-evaluate  
-
-            }  
-
-        }  
-
-    }  
-
-}  
-
-  
-
-  
-
-void sensor() {  
-
-    // Send ultrasonic pulse  
-
-    digitalWrite(trigPIN, LOW);  
-
-    delayMicroseconds(2);  
-
-    digitalWrite(trigPIN, HIGH);  
-
-    delayMicroseconds(10);  
-
-    digitalWrite(trigPIN, LOW);  
-
-  
-
-  
-
-    // Measure pulse duration  
-
-    float duration = pulseIn(echoPIN, HIGH);  
-
-  
-
-  
-
-    // Calculate distance in cm  
-
-    distance = (duration / 2) * 0.0343;  
-
-  
-
-  
-
-    // Print distance to Serial Monitor  
-
-    Serial.print("Distance: ");  
-
-    if (distance >= 400 || distance <= 2) {  
-
-        Serial.println("Out of Range");  
-
-        distance = 400; // Treat out-of-range as max distance  
-
-    } else {  
-
-        Serial.print(distance);  
-
-        Serial.println(" cm");  
-
-    }  
-
-}  
-
-  
-
-  
-
-// Motor Control Functions  
-
-void forward(int speed) {  
-
-    digitalWrite(AIN, HIGH);  
-
-    digitalWrite(STBY, HIGH);  
-
-    analogWrite(PWMA, speed);  
-
-    digitalWrite(LEFT_BIN, HIGH);  
-
-    analogWrite(PWMB, speed);  
-
-}  
-
-  
-
-  
-
-void stopped() {  
-
-    digitalWrite(AIN, LOW);  
-
-    digitalWrite(STBY, HIGH);  
-
-    analogWrite(PWMA, 0);  
-
-    digitalWrite(LEFT_BIN, LOW);  
-
-    analogWrite(PWMB, 0);  
-
-}  
-
-  
-
-  
-
-void backward(int speed) {  
-
-    digitalWrite(AIN, LOW);  
-
-    digitalWrite(STBY, HIGH);  
-
-    analogWrite(PWMA, speed);  
-
-    digitalWrite(LEFT_BIN, LOW);  
-
-    analogWrite(PWMB, speed);  
-
-}  
-
-  
-
-  
-
-void turnRight(int speed) {  
-
-    digitalWrite(AIN, LOW); // Reverse motor A  
-
-    digitalWrite(STBY, HIGH);  
-
-    analogWrite(PWMA, speed);  
-
-    digitalWrite(LEFT_BIN, HIGH); // Forward motor B  
-
-    analogWrite(PWMB, speed);  
-
-    delay(500); // Turn duration  
-
-    stopped();  
-
-}  
-
-  
-
-  
-
-void turnLeft(int speed) {  
-
-    digitalWrite(AIN, HIGH); // Forward motor A  
-
-    digitalWrite(STBY, HIGH);  
-
-    analogWrite(PWMA, speed);  
-
-    digitalWrite(LEFT_BIN, LOW); // Reverse motor B  
-
-    analogWrite(PWMB, speed);  
-
-    delay(500); // Turn duration  
-
-    stopped();  
-
-}  
+/*
+This program controls an obstacle-avoiding robot car using an ultrasonic sensor.
+The robot scans for obstacles and makes decisions to avoid them by turning left, right,
+or reversing. A servo motor is used to scan the environment for obstacles.
+*/
+
+#include <Servo.h> // Include Servo library for servo control
+
+// Pin Definitions
+const int trigPIN = 13;      // Ultrasonic sensor trigger pin
+const int echoPIN = 12;      // Ultrasonic sensor echo pin
+const int AIN = 7;           // Motor A direction pin
+const int LEFT_BIN = 8;      // Motor B direction pin
+const int PWMA = 5;          // Motor A PWM pin
+const int PWMB = 6;          // Motor B PWM pin
+const int STBY = 3;          // Standby pin for motor driver
+Servo myservo;               // Servo object for scanning
+
+// Global Variables
+float distance = 0;          // Distance from ultrasonic sensor
+const int threshold = 35;    // Obstacle distance threshold in cm
+int pos = 90;                // Initial servo position (center)
+
+// Function Prototypes
+void sensor();               // Function to calculate distance
+void forward(int speed);     // Function to move forward
+void stopped();              // Function to stop the car
+void backward(int speed);    // Function to move backward
+void turnLeft(int speed);    // Function to turn left
+void turnRight(int speed);   // Function to turn right
+
+void setup() {
+    Serial.begin(9600);         // Initialize serial communication
+    pinMode(trigPIN, OUTPUT);   // Set ultrasonic trigger pin as output
+    pinMode(echoPIN, INPUT);    // Set ultrasonic echo pin as input
+    pinMode(AIN, OUTPUT);       // Set motor A direction pin as output
+    pinMode(LEFT_BIN, OUTPUT);  // Set motor B direction pin as output
+    pinMode(STBY, OUTPUT);      // Set standby pin as output
+    myservo.attach(10);         // Attach servo to pin 10
+    myservo.write(90);          // Center the servo motor
+    delay(500);                 // Allow servo to stabilize
+}
+
+void loop() {
+    sensor();                   // Measure distance using ultrasonic sensor
+    delay(500);                 // Wait for stability
+
+    if (distance > threshold) { // If no obstacle is close
+        forward(60);            // Move forward at speed 60
+    } else {                    // Obstacle detected
+        stopped();              // Stop the car
+
+        myservo.write(0);       // Rotate servo to scan left
+        delay(500);             // Wait for scan
+        sensor();               // Measure distance to the left
+
+        if (distance > threshold) { // If left is clear
+            turnRight(120);     // Turn left
+            myservo.write(90);  // Center the servo
+            delay(500);         // Wait for stability
+            forward(70);        // Move forward
+        } else {
+            myservo.write(180); // Rotate servo to scan right
+            delay(500);         // Wait for scan
+            sensor();           // Measure distance to the right
+
+            if (distance > threshold) { // If right is clear
+                turnLeft(120);  // Turn right
+                myservo.write(90); // Center the servo
+                delay(500);     // Wait for stability
+                forward(60);    // Move forward
+            } else {            // If both sides are blocked
+                myservo.write(90); // Center the servo
+                delay(500);     // Wait for stability
+                sensor();       // Recheck distance
+                backward(70);   // Reverse
+                delay(1000);    // Reverse for 1 second
+                turnRight(200); // Turn right to reorient
+                stopped();      // Stop the car
+            }
+        }
+    }
+}
+
+void sensor() {
+    digitalWrite(trigPIN, LOW); // Set trigger pin LOW
+    delayMicroseconds(2);       // Wait 2 microseconds
+    digitalWrite(trigPIN, HIGH); // Send ultrasonic pulse
+    delayMicroseconds(10);      // Wait 10 microseconds
+    digitalWrite(trigPIN, LOW); // Set trigger pin LOW again
+
+    float duration = pulseIn(echoPIN, HIGH); // Measure pulse duration
+    distance = (duration / 2) * 0.0343;      // Convert duration to distance
+
+    Serial.print("Distance: "); // Print distance to Serial Monitor
+    if (distance >= 400 || distance <= 2) { // If out of range
+        Serial.println("Out of Range");     // Print "Out of Range"
+        distance = 400; // Treat out-of-range values as max distance
+    } else {
+        Serial.print(distance); // Print measured distance
+        Serial.println(" cm");  // Add "cm" for clarity
+    }
+}
+
+// Motor Control Functions
+void forward(int speed) {
+    digitalWrite(AIN, HIGH);    // Set motor A forward
+    digitalWrite(STBY, HIGH);   // Enable motor driver
+    analogWrite(PWMA, speed);   // Set motor A speed
+    digitalWrite(LEFT_BIN, HIGH); // Set motor B forward
+    analogWrite(PWMB, speed);   // Set motor B speed
+}
+
+void stopped() {
+    digitalWrite(AIN, LOW);     // Stop motor A
+    digitalWrite(STBY, HIGH);   // Enable motor driver
+    analogWrite(PWMA, 0);       // Set motor A speed to 0
+    digitalWrite(LEFT_BIN, LOW); // Stop motor B
+    analogWrite(PWMB, 0);       // Set motor B speed to 0
+}
+
+void backward(int speed) {
+    digitalWrite(AIN, LOW);     // Set motor A backward
+    digitalWrite(STBY, HIGH);   // Enable motor driver
+    analogWrite(PWMA, speed);   // Set motor A speed
+    digitalWrite(LEFT_BIN, LOW); // Set motor B backward
+    analogWrite(PWMB, speed);   // Set motor B speed
+}
+
+void turnRight(int speed) {
+    digitalWrite(AIN, LOW);     // Reverse motor A
+    digitalWrite(STBY, HIGH);   // Enable motor driver
+    analogWrite(PWMA, speed);   // Set motor A speed
+    digitalWrite(LEFT_BIN, HIGH); // Forward motor B
+    analogWrite(PWMB, speed);   // Set motor B speed
+    delay(500);                 // Allow turn to complete
+    stopped();                  // Stop the car
+}
+
+void turnLeft(int speed) {
+    digitalWrite(AIN, HIGH);    // Forward motor A
+    digitalWrite(STBY, HIGH);   // Enable motor driver
+    analogWrite(PWMA, speed);   // Set motor A speed
+    digitalWrite(LEFT_BIN, LOW); // Reverse motor B
+    analogWrite(PWMB, speed);   // Set motor B speed
+    delay(500);                 // Allow turn to complete
+    stopped();                  // Stop the car
+}
