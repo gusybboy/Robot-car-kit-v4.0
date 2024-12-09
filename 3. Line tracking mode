@@ -1,180 +1,99 @@
-int Left1 = 7;   
-
-int Right1 = 8;   
-
-int speeda = 5;   
-
-int speedb = 6;   
-
-int stb = 3;  
-
- 
- 
-
-void setup() { 
-
-  // put your setup code here, to run once: 
-
-Serial.begin(9600); 
-
-  pinMode(Left1, OUTPUT);   
-
-  pinMode(Right1, OUTPUT);   
-
-  pinMode(stb, OUTPUT);   
-
-} 
-
- 
- 
-
-void loop() { 
-
-  // put your main code here, to run repeatedly: 
-
-int right = analogRead(A0); 
-
-int middle = analogRead(A1); 
-
-int left = analogRead(A2); 
-
- 
- 
-
-if(right == 1018 && middle == 1018 && left == 1018){ 
-
-  Stop(0); 
-
-} 
-
-if(middle >= 750 && middle <= 790){ 
-
-  Forward(50); 
-
-} 
-
-if(right >= 750 && right <= 800){ 
-
-  Right(50); 
-
-} 
-
-if(left >= 690 && left <= 750){ 
-
-  Left(50); 
-
-} 
-
-if(middle < 500 && right < 500 && left < 500){ 
-
-  Uturn(100); 
-
-} 
-
- 
- 
-
-Serial.print("right = ");  
-
-Serial.print(right);  
-
-Serial.print("\t");  
-
-Serial.print("middle = ");  
-
-Serial.print(middle);  
-
-Serial.print("\t");  
-
-Serial.print("left = ");  
-
-Serial.println(left);   
-
-} 
-
- 
- 
-
-void Stop(int x){ 
-
-  digitalWrite(Left1, 1);   
-
-  digitalWrite(Right1, 1);   
-
-  analogWrite(speeda, x);   
-
-  analogWrite(speedb, x);   
-
-  digitalWrite(stb, 1);  
-
-} 
-
- 
- 
-
-void Uturn(int x){ 
-
-digitalWrite(Left1, 1); 
-
-analogWrite(speeda, x); 
-
-digitalWrite(Right1, 0); 
-
-analogWrite(speedb, x / 2); 
-
-digitalWrite(stb, 1); 
-
-} 
-
- 
- 
-
-void Forward(int x){    
-
-  digitalWrite(Left1, 1);   
-
-  digitalWrite(Right1, 1);   
-
-  analogWrite(speeda, x);   
-
-  analogWrite(speedb, x);   
-
-  digitalWrite(stb, 1);   
-
-} 
-
- 
- 
-
-void Right(int x){    
-
-  digitalWrite(Left1, 1);   
-
-  digitalWrite(Right1, 1);   
-
-  analogWrite(speeda, 0);   
-
-  analogWrite(speedb, x);   
-
-  digitalWrite(stb, 1);   
-
-}   
-
- 
- 
-
-void Left(int x){    
-
-  digitalWrite(Left1, 1);   
-
-  digitalWrite(Right1, 1);   
-
-  analogWrite(speeda, x);   
-
-  analogWrite(speedb, 0);   
-
-  digitalWrite(stb, 1);   
-
-}   
-
- 
+/*
+This program implements a line tracker mode for a robot car kit.
+The car reads values from three sensors (right, middle, left) to decide
+whether to move forward, stop, turn right, turn left, or make a U-turn.
+*/
+
+int Left1 = 7;   // Pin for left motor direction
+int Right1 = 8;  // Pin for right motor direction
+int speeda = 5;  // Pin for left motor speed control
+int speedb = 6;  // Pin for right motor speed control
+int stb = 3;     // Pin for enabling motors
+
+void setup() {
+  Serial.begin(9600); // Initialize serial communication at 9600 baud
+  pinMode(Left1, OUTPUT);   // Set left motor pin as output
+  pinMode(Right1, OUTPUT);  // Set right motor pin as output
+  pinMode(stb, OUTPUT);     // Set standby pin as output
+}
+
+void loop() {
+  int right = analogRead(A0);  // Read value from right sensor
+  int middle = analogRead(A1); // Read value from middle sensor
+  int left = analogRead(A2);   // Read value from left sensor
+
+  // Stop the car if all sensors detect white
+  if (right == 1018 && middle == 1018 && left == 1018) {
+    Stop(0); 
+  }
+
+  // Move forward if middle sensor detects black line
+  if (middle >= 750 && middle <= 790) {
+    Forward(50); 
+  }
+
+  // Turn right if the right sensor detects black line
+  if (right >= 750 && right <= 800) {
+    Right(50); 
+  }
+
+  // Turn left if the left sensor detects black line
+  if (left >= 690 && left <= 750) {
+    Left(50); 
+  }
+
+  // Make a U-turn if all sensors detect black
+  if (middle < 500 && right < 500 && left < 500) {
+    Uturn(100); 
+  }
+
+  // Print sensor values for debugging
+  Serial.print("right = ");  
+  Serial.print(right);  
+  Serial.print("\t");  
+  Serial.print("middle = ");  
+  Serial.print(middle);  
+  Serial.print("\t");  
+  Serial.print("left = ");  
+  Serial.println(left);   
+}
+
+void Stop(int x) {
+  digitalWrite(Left1, 1);    // Stop left motor
+  digitalWrite(Right1, 1);   // Stop right motor
+  analogWrite(speeda, x);    // Set left motor speed to 0
+  analogWrite(speedb, x);    // Set right motor speed to 0
+  digitalWrite(stb, 1);      // Enable standby mode
+}
+
+void Uturn(int x) {
+  digitalWrite(Left1, 1);    // Set left motor forward
+  analogWrite(speeda, x);    // Set left motor speed
+  digitalWrite(Right1, 0);   // Set right motor backward
+  analogWrite(speedb, x / 2); // Set right motor speed (slower for U-turn)
+  digitalWrite(stb, 1);      // Enable motor operation
+}
+
+void Forward(int x) {
+  digitalWrite(Left1, 1);    // Set left motor forward
+  digitalWrite(Right1, 1);   // Set right motor forward
+  analogWrite(speeda, x);    // Set left motor speed
+  analogWrite(speedb, x);    // Set right motor speed
+  digitalWrite(stb, 1);      // Enable motor operation
+}
+
+void Right(int x) {
+  digitalWrite(Left1, 1);    // Set left motor forward
+  digitalWrite(Right1, 1);   // Set right motor forward
+  analogWrite(speeda, 0);    // Stop left motor
+  analogWrite(speedb, x);    // Set right motor speed
+  digitalWrite(stb, 1);      // Enable motor operation
+}
+
+void Left(int x) {
+  digitalWrite(Left1, 1);    // Set left motor forward
+  digitalWrite(Right1, 1);   // Set right motor forward
+  analogWrite(speeda, x);    // Set left motor speed
+  analogWrite(speedb, 0);    // Stop right motor
+  digitalWrite(stb, 1);      // Enable motor operation
+}
