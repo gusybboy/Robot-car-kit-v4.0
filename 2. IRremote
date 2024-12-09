@@ -1,177 +1,99 @@
-int left = 7;  
-
-int right = 8;  
-
-int speeda = 5;  
-
-int speedb = 6;  
-
-int stb = 3; 
-
- 
- 
-
-int speed = 0; 
-
- 
- 
-
- #include <IRremote.h>   
-
- 
- 
-
-const int IR_RECEIVE_PIN = 9; // Define the pin connected to the IR receiver  
-
-  
-
-void setup() {   
-
-    Serial.begin(9600);   
-
-    IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK); // Initialize the receiver   
-
-    Serial.println("IR Receiver Initialized. Waiting for input...");   
-
- 
- 
-
-    pinMode(left, OUTPUT);  
-
-    pinMode(right, OUTPUT);  
-
-    pinMode(stb, OUTPUT);  
-
-}   
-
- 
- 
-
-void loop() {   
-
-    // Check if a signal is received  
-
-    if (IrReceiver.decode()) {   
-
-        unsigned long receivedData = IrReceiver.decodedIRData.decodedRawData;  
-
-        Serial.print("Received HEX Value: 0x");   
-
-        Serial.println(receivedData, HEX); // Print the HEX value of the received signal    
-
- 
- 
-
-  if(receivedData == 0xE619FF00){ 
-
-    Forward(50); 
-
-} 
-
-  if(receivedData == 0xE31CFF00){ 
-
-    Reverse(50);  
-
-} 
-
-  if(receivedData == 0xA15EFF00){ 
-
-    Right(50);  
-
-  } 
-
-  if(receivedData == 0xF30CFF00){ 
-
-    Left(50);  
-
-} 
-
-  if(receivedData == 0xE718FF00){ 
-
-    Stop(0); 
-
-  } 
-
- 
-
-  IrReceiver.resume(); // Prepare to receive the next signal  
-
-} 
-
-} 
-
-void Forward(int x){   
-
-    digitalWrite(left, 1);  
-
-    digitalWrite(right, 1);  
-
-    analogWrite(speeda, x);  
-
-    analogWrite(speedb, x);  
-
-    digitalWrite(stb, 1);  
-
-}   
-
-void Reverse(int x){  
-
-    digitalWrite(left, 0);  
-
-    digitalWrite(right, 0);  
-
-    analogWrite(speeda, x);  
-
-    analogWrite(speedb, x);  
-
-    digitalWrite(stb, 1);  
-
-}  
-
- 
- 
-
-void Right(int x){   
-
-    digitalWrite(left, );  
-
-    digitalWrite(right, 1);  
-
-    analogWrite(speeda, 0);  
-
-    analogWrite(speedb, x);  
-
-    digitalWrite(stb, 1);  
-
-}  
-
- 
- 
-
-void Left(int x){   
-
-    digitalWrite(left, 1);  
-
-    digitalWrite(right, 0);  
-
-    analogWrite(speeda, x);  
-
-    analogWrite(speedb, 0);  
-
-    digitalWrite(stb, 1);  
-
-}  
-
-void Stop(int x){ 
-
-    digitalWrite(left, 1);  
-
-    digitalWrite(right, 1);  
-
-    analogWrite(speeda, x);  
-
-    analogWrite(speedb, x);  
-
-    digitalWrite(stb, 1); 
-
-} 
+/* 
+This program uses an IR remote to control a car's movement. 
+It responds to specific HEX codes received via the IR receiver.
+Supported movements include forward, reverse, left, right, and stop. 
+*/
+
+int left = 7; // Define pin for left motor direction
+int right = 8; // Define pin for right motor direction
+int speeda = 5; // Define pin for motor A speed control
+int speedb = 6; // Define pin for motor B speed control
+int stb = 3; // Define pin for motor enable/standby
+int speed = 0; // Initialize speed variable to 0
+
+#include <IRremote.h> // Include IR remote library
+
+const int IR_RECEIVE_PIN = 9; // Pin for IR receiver
+
+void setup() {
+    Serial.begin(9600); // Start serial communication at 9600 baud
+    IrReceiver.begin(IR_RECEIVE_PIN, ENABLE_LED_FEEDBACK); // Initialize IR receiver
+    Serial.println("IR Receiver Initialized. Waiting for input..."); // Print status message
+
+    pinMode(left, OUTPUT); // Set left motor pin as output
+    pinMode(right, OUTPUT); // Set right motor pin as output
+    pinMode(stb, OUTPUT); // Set standby pin as output
+}
+
+void loop() {
+    // Check if an IR signal is received
+    if (IrReceiver.decode()) {
+        unsigned long receivedData = IrReceiver.decodedIRData.decodedRawData; // Read received data
+        Serial.print("Received HEX Value: 0x"); // Print received data prefix
+        Serial.println(receivedData, HEX); // Print received data in HEX
+
+        // Check received signal and execute corresponding action
+        if (receivedData == 0xE619FF00) {
+            Forward(50); // Move forward at speed 50
+        }
+        if (receivedData == 0xE31CFF00) {
+            Reverse(50); // Move backward at speed 50
+        }
+        if (receivedData == 0xA15EFF00) {
+            Right(50); // Turn right at speed 50
+        }
+        if (receivedData == 0xF30CFF00) {
+            Left(50); // Turn left at speed 50
+        }
+        if (receivedData == 0xE718FF00) {
+            Stop(0); // Stop all movement
+        }
+
+        IrReceiver.resume(); // Prepare to receive the next signal
+    }
+}
+
+// Function to move forward
+void Forward(int x) {
+    digitalWrite(left, 1); // Set left motor direction forward
+    digitalWrite(right, 1); // Set right motor direction forward
+    analogWrite(speeda, x); // Set speed of motor A
+    analogWrite(speedb, x); // Set speed of motor B
+    digitalWrite(stb, 1); // Enable motor operation
+}
+
+// Function to move backward
+void Reverse(int x) {
+    digitalWrite(left, 0); // Set left motor direction backward
+    digitalWrite(right, 0); // Set right motor direction backward
+    analogWrite(speeda, x); // Set speed of motor A
+    analogWrite(speedb, x); // Set speed of motor B
+    digitalWrite(stb, 1); // Enable motor operation
+}
+
+// Function to turn right
+void Right(int x) {
+    digitalWrite(left, 1); // Set left motor forward
+    digitalWrite(right, 0); // Set right motor backward
+    analogWrite(speeda, x); // Set speed of motor A
+    analogWrite(speedb, 0); // Stop motor B
+    digitalWrite(stb, 1); // Enable motor operation
+}
+
+// Function to turn left
+void Left(int x) {
+    digitalWrite(left, 0); // Set left motor backward
+    digitalWrite(right, 1); // Set right motor forward
+    analogWrite(speeda, 0); // Stop motor A
+    analogWrite(speedb, x); // Set speed of motor B
+    digitalWrite(stb, 1); // Enable motor operation
+}
+
+// Function to stop all movement
+void Stop(int x) {
+    digitalWrite(left, 1); // Set left motor direction to stop
+    digitalWrite(right, 1); // Set right motor direction to stop
+    analogWrite(speeda, x); // Set speed of motor A to 0
+    analogWrite(speedb, x); // Set speed of motor B to 0
+    digitalWrite(stb, 1); // Enable standby mode
+}
